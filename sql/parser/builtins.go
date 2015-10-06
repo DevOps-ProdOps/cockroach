@@ -436,7 +436,11 @@ var builtins = map[string][]builtin{
 			types:      typeList{},
 			returnType: DummyDate,
 			fn: func(e EvalContext, args DTuple) (Datum, error) {
-				return MakeDDate(e.StmtTimestamp.Time), nil
+				loc, err := e.GetLocation()
+				if err != nil {
+					return DummyTimestamp, err
+				}
+				return MakeDDate(e.StmtTimestamp.Time.In(loc)), nil
 			},
 		},
 	},
@@ -450,8 +454,12 @@ var builtins = map[string][]builtin{
 			types:      typeList{},
 			returnType: DummyTimestamp,
 			impure:     true,
-			fn: func(_ EvalContext, args DTuple) (Datum, error) {
-				return DTimestamp{Time: time.Now()}, nil
+			fn: func(e EvalContext, args DTuple) (Datum, error) {
+				loc, err := e.GetLocation()
+				if err != nil {
+					return DummyTimestamp, err
+				}
+				return DTimestamp{Time: time.Now().In(loc)}, nil
 			},
 		},
 	},
@@ -461,7 +469,11 @@ var builtins = map[string][]builtin{
 			types:      typeList{},
 			returnType: DummyTimestamp,
 			fn: func(e EvalContext, args DTuple) (Datum, error) {
-				return e.TxnTimestamp, nil
+				loc, err := e.GetLocation()
+				if err != nil {
+					return DummyTimestamp, err
+				}
+				return DTimestamp{Time: e.TxnTimestamp.Time.In(loc)}, nil
 			},
 		},
 	},
@@ -848,7 +860,11 @@ var nowImpl = builtin{
 	types:      typeList{},
 	returnType: DummyTimestamp,
 	fn: func(e EvalContext, args DTuple) (Datum, error) {
-		return e.StmtTimestamp, nil
+		loc, err := e.GetLocation()
+		if err != nil {
+			return DummyTimestamp, err
+		}
+		return DTimestamp{Time: e.StmtTimestamp.Time.In(loc)}, nil
 	},
 }
 
